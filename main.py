@@ -44,6 +44,31 @@ def show_posts():
     return  JSONResponse(content={"all the posts" : all_posts}, status_code=200)
 
 
+def serialize_posts():
+    serialized_posts = []
+    for post in post_list:
+        serialized_posts.append(post.model_dump())
+    return serialized_posts
+
+@app.put("/posts")
+def edit_posts(updated_posts : List[PostPayload]):
+    if len(updated_posts) == 0:
+        return JSONResponse(content={"error message" :"there is no tasks to be updated"}, status_code=400)
+    else:
+        for updated_post in updated_posts:
+            is_present = False
+            post_index = 0
+            for present_post in post_list:
+                if updated_post.title == present_post.title:
+                    is_present = True
+                    post_index = post_list.index(present_post)
+            if is_present:
+                post_list.pop(post_index)
+                post_list.insert(post_index, updated_post)
+            else:
+                post_list.append(updated_post)
+    return JSONResponse(content={"Updated set of tasks" : serialize_posts()}, status_code=200)
+
 @app.get("/{full_path:path}")
 def catch_invalid_paths(full_path: str):
     with open("error.html", "r", encoding="utf-8") as file:
