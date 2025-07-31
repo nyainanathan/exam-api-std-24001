@@ -1,4 +1,5 @@
 import _pydatetime
+import base64
 from _pydatetime import datetime
 from fastapi import FastAPI
 from pydantic_core.core_schema import DatetimeSchema
@@ -12,6 +13,22 @@ app = FastAPI()
 @app.get("/ping")
 def send_pong():
     return Response(content="pong" ,status_code=200,  media_type="text/plain")
+
+
+@app.get("/ping/auth")
+def send_pong(request : Request):
+
+    auth_header = request.headers.get("Authorization")
+    auth_header_encoded_str = auth_header.replace("Basic ", "")
+
+    required_credential = "user:secret"
+    required_credential_bytes = required_credential.encode("utf-8")
+    required_credential_encoded = base64.b64encode(required_credential_bytes)
+    required_credential_encoded_str = required_credential_encoded.decode("utf-8")
+
+    if auth_header_encoded_str == required_credential_encoded_str:
+        return Response(content=f"pong" ,status_code=200,  media_type="text/plain")
+    return Response(content="wrong credentials", status_code=403, media_type="text/plain")
 
 @app.get("/home")
 def welcome_home():
