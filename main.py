@@ -19,11 +19,6 @@ def welcome_home():
         html_content = file.read()
     return Response(content=html_content, status_code=200, media_type="text/html")
 
-@app.get("/{full_path:path}")
-def catch_invalid_paths(full_path: str):
-    with open("error.html", "r", encoding="utf-8") as file:
-        html_content = file.read()
-    return Response(content=html_content, status_code=404, media_type="text/html")
 
 class PostPayload(BaseModel):
     author: str
@@ -40,3 +35,17 @@ def create_posts(new_posts: List[PostPayload]):
     for post in post_list:
         resp.append(post.model_dump())
     return JSONResponse(content={"posts" : resp} , status_code=201)
+
+@app.get("/posts")
+def show_posts():
+    all_posts = []
+    for post in post_list:
+        all_posts.append(post.model_dump())
+    return  JSONResponse(content={"all the posts" : all_posts}, status_code=200)
+
+
+@app.get("/{full_path:path}")
+def catch_invalid_paths(full_path: str):
+    with open("error.html", "r", encoding="utf-8") as file:
+        html_content = file.read()
+    return Response(content=html_content, status_code=404, media_type="text/html")
